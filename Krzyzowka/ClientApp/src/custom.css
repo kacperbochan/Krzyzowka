@@ -12,3 +12,38 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+
+
+
+/*                KRZYŻÓWKA              */
+.crossword__grid {
+  background-color: lightgrey;
+  /*use a variable*/
+}
+
+.word {
+  border: 1px solid red;
+}
+
+.small {
+  font: 3px sans-serif;
+  text-transform: uppercase;
+}
+
+.heavy {
+  font: bold 7px sans-serif;
+  text-transform: uppercase;
+}
+
+.current {
+  z-index: 999;
+}
+
+.cell {
+  border: 1px solid red;
+}
+
+
+
+/*           KONIEC    KRZYŻÓWKA           */

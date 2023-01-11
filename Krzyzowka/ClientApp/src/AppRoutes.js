@@ -11,7 +11,7 @@ const AppRoutes = [
   },
   {
     path: '/quiz',
-    element: <Quiz />
+    element: <Quiz /> 
   },
   {
     path: '/crossword',
