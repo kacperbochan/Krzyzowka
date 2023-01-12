@@ -15,14 +15,14 @@ export class Crossword extends Component {
                     orientation: "down",
                     x: 2,
                     y: 1,
-                    length: 5
+                    length: 4
                 },
                 {
                     word: "consolidate",
                     orientation: "across",
                     x: 1,
                     y: 2,
-                    length: 5
+                    length: 11
                 },
                 {
                     word: "shift",
@@ -36,7 +36,7 @@ export class Crossword extends Component {
                     orientation: "across",
                     x: 4,
                     y: 4,
-                    length: 5
+                    length: 3
                 },
                 {
                     word: "truce",
@@ -50,16 +50,16 @@ export class Crossword extends Component {
                     orientation: "down",
                     x: 9,
                     y: 5,
-                    length: 5
+                    length: 6
                 }
             ],
             clues: [ 
                 "Co to świat?",
-                "Co to świat?", 
-                "Co to świat?", 
-                "Co to świat?", 
-                "Co to świat?", 
-                "Co to świat?" 
+                "długie łsowo?", 
+                "ctr + + delete?", 
+                "zimne?", 
+                "coś?", 
+                "pasujem?" 
             ],
             answers: [
               "Word",
@@ -70,23 +70,30 @@ export class Crossword extends Component {
               "relish"
             ],
             attempts: [],
-            numberOfWords: 6
+            numberOfWords: 6,
+            refs: [],
+            currentFocus: 0,
+            currentWord: 0
         }
     };
 }
 
-addSolvedWord = (word) => {
-  this.setState(
-      (prevState) => ({
-          data: { ...this.state.data, attempts: word }
-      }),
-      console.log("Added attempt ", word)
-  );
+addSolvedWord = (tuple) => {
+  
+    let wordToAdd = tuple.words[tuple.number]
+    ? tuple.words[tuple.number]
+    : tuple.words[0];
+
+    console.log("CWaddSolvedWord", {
+        word: wordToAdd,
+        number: tuple.number
+    });
+
 };
 
 checkAnswers = () => {
   const { attempts, answers } = this.state.data;
-  console.log(attempts, answers);
+  //console.log(attempts, answers);
   let score = 0;
 
   if (attempts.length === answers.length) {
@@ -109,6 +116,98 @@ checkAnswers = () => {
 };
 
 
+clearEverything = () => {
+  console.log("clear everything and rerender from scratch");
+  // this.setState({ data: null });
+};
+
+handleClueClick = (e, index) => {
+  let startingCell = 0;
+
+  for (let i = 0; i < index; i++) {
+      startingCell =
+          index === 0
+              ? 0
+              : (startingCell += this.state.data.wordList[i].word.length);
+  }
+
+  this.setState(
+    { currentFocus: startingCell },
+    this.state.data.refs[startingCell].current.focus()
+);
+};
+
+moveToNextCell = (backwards) => {
+    //all the cell change logic is in changeActiveCell
+    //here we will just call changeActiveCell with parameters in a
+    //loop
+
+    const { currentFocus, refs } = this.state.data;
+    let nextCell = 0;
+
+        if (currentFocus < refs.length - 1) {
+            if (backwards) {
+                nextCell = currentFocus === 0 ? 0 : currentFocus - 1;
+            } else {
+                nextCell = currentFocus + 1;
+            }
+
+            this.setState(
+                { currentFocus: nextCell },
+                this.state.data.refs[nextCell].current.focus()
+            );
+        } else {
+            nextCell = 0;
+            this.setState(
+                { currentFocus: nextCell },
+                this.state.data.refs[nextCell].current.focus()
+            );
+    }
+
+    
+};
+
+changeActiveCell = (activeCell) => {
+    // activeCell = {index: 0, wordNum: 0}
+
+    // console.log(
+    //     "changeActiveCell",
+    //     activeCell,
+    //     this.state.data.currentWord
+    // );
+
+    let newActiveCell = 0,
+        allPrevWords = 0,
+        allCurWordChars = activeCell.index;
+
+    for (let i = 0; i < activeCell.wordNum; i++) {
+        allPrevWords += this.state.data.wordList[i].length;
+    }
+
+    newActiveCell = allPrevWords + allCurWordChars;
+
+    this.setState(
+        (prevState) => ({
+            data: {
+                ...this.state.data,
+                currentFocus: newActiveCell,
+                currentWord: activeCell.wordNum
+            }
+        }),
+        console.log("currentFocus ", newActiveCell)
+    );
+};
+
+addToRefs = (ref) => {
+  const { data } = this.state;
+  this.setState((prevState) => ({
+      data: {
+          ...data,
+          refs: prevState.data.refs.concat(ref)
+      }
+  }));
+};
+
 render() {
     //return (
     //    <div>
@@ -119,16 +218,28 @@ render() {
     if (this.state.data.wordList.length > 0) {
         return (
             <React.Fragment>
-                <Grid data={this.state.data} addSolvedWord={this.addSolvedWord}>
-                </Grid>
-                {this.state.data.clues.map((clue) => {
+                <Grid 
+                data={this.state.data} 
+                addSolvedWord={this.addSolvedWord}
+                addToRefs={this.addToRefs}
+                moveToNextCell={this.moveToNextCell}
+                changeActiveCell={this.changeActiveCell}
+                ></Grid>
+                {this.state.data.clues.map((clue, index) => {
                     return (
-                        <li key={clue} onClick={this.checkAnswers}>
-                            {clue}
-                        </li>
+                      <div className="clue" key={clue}>
+                      <li
+                          onClick={(e) =>
+                              this.handleClueClick(e, index)
+                          }
+                      >
+                          {clue}
+                      </li>
+                  </div>
                     );
                 })}
                 <button onClick={this.checkAnswers}>Check answers</button>
+                <button onClick={this.clearEverything}>Clear</button>
             </React.Fragment>
         );
     } else {

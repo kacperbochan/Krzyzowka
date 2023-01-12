@@ -6,28 +6,30 @@ export default class Word extends Component {
         super(props);
         this.state = {
             solution: this.props.word,
-            solved: ""
+            solved: [],
+            editing: false,
+            value: "",
+            tuples: [],
+            indices: [],
+            cells: []
         };
     }
 
-    componentDidUpdate() {
-        if (this.state.solved.length === this.props.word.length) {
-            this.props.wordChange(this.state.solved);
-        }
-    }
-
-    handleWordClick = (e) => {
-        this.setState({ solved: this.state.solved + e }, () => console.log(e));
-    };
-    
-    render() {
+    componentDidMount() {
+        let cells = [];
         const splitWord = this.props.word.split("");
-        return splitWord.map((char, index) => {
-            return (
-                <React.Fragment key={Math.random()}>
+
+        splitWord.forEach((element, index) => {
+            cells.push(
+                <React.Fragment key={this.props.word + index}>
                     <Cell
+                        index={index}
+                        word={this.props.word}
+                        wordEditing={this.state.editing}
                         orientation={this.props.orientation}
                         number={index === 0 ? this.props.number + 1 : null}
+                        wordNum={this.props.number}
+                        length={this.props.word.length}
                         x={
                             this.props.orientation === "across"
                                 ? this.props.x + index
@@ -38,11 +40,66 @@ export default class Word extends Component {
                                 ? this.props.y + index
                                 : this.props.y
                         }
-                        value={this.state.solved[index]}
-                        onClick={this.handleWordClick}
+                        onWordChange={this.handleWordChange}
+                        refer={this.props.refer}
+                        id={this.props.word}
+                        addToRefs={this.props.addToRefs}
+                        moveToNextCell={this.props.moveToNextCell}
+                        changeActiveCell={this.props.changeActiveCell}
                     />
                 </React.Fragment>
             );
         });
+
+        this.setState({ cells: cells });
+    }
+
+    componentDidUpdate() {
+        const { solved, solution } = this.state;
+        if (this.state.solved.length === solution.length) {
+            this.props.wordChange({
+                value: solved,
+                number: this.props.number
+            });
+        }
+    }
+
+
+    addToRefs = (ref) => {
+        this.props.addToRefs(ref);
+    };
+
+
+    handleWordChange = (tuple) => {
+       // console.log("word handleWordChange", tuple);
+        let { tuples, indices, solved } = this.state;
+
+        if (this.state.indices.indexOf(tuple.index) === -1) {
+            //if incoming indice is empty
+            this.setState(
+                {
+                    tuples: [...tuples, tuple],
+                    indices: [...indices, tuple.index]
+                },
+                this.setState({
+                    solved: [...solved, tuple]
+                })
+            );
+        } else {
+            let edit = tuples.findIndex((x) => x.index === tuple.index);
+
+            tuples[edit].value = tuple.value;
+            solved[edit] = tuple;
+            this.setState(
+                { tuples: tuples, solved: solved },
+                console.log("index edited", tuples[edit])
+            );
+        }
+        this.props.moveToNextCell();
+    };
+    
+
+    render() {
+        return this.state.cells;
     }
 }

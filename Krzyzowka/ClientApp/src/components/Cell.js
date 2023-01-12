@@ -6,24 +6,55 @@ export default class Cell extends Component {
         this.state = { 
             editing: false,
             inputVal: "",
-            solved: false
+            solved: false,
+            value: "",
+            wordSolved: false
         };
+
+        this.cellRef = React.createRef();
+    }
+
+    componentDidUpdate() {
+        if (this.state.value !== "") {
+        }
+    }
+
+    componentDidMount() {
+        if (typeof this.props.addToRefs === "function") {
+            this.props.addToRefs(this.cellRef);
+        }
     }
 
     handleFocus = () => {
         this.setState({ editing: !this.state.editing });
+        this.props.changeActiveCell({
+            index: this.props.index,
+            wordNum: this.props.wordNum
+        });
     };
 
     handleBlur = () => {
         this.setState({ editing: !this.state.editing });
         if (this.props.value === "") {
-            this.setState({ value: this.props.value, solved: false });
+            this.setState(
+                { value: this.props.value, solved: false }
+                // this.props.onWordUnfocus()
+            );
         }
     };
 
     handleChange = (e) => {
-        if (e.target.value !== "") {
-            this.setState({ solved: true }, this.props.onClick(e.target.value));
+        let { index, wordNum } = this.props;
+        let value = e.target.value;
+
+        if (value !== "") {
+            this.setState(
+                {
+                    solved: true,
+                    value: value
+                },
+                this.props.onWordChange({ value, index, wordNum })
+            );
         }
     };
 
@@ -37,6 +68,9 @@ export default class Cell extends Component {
             ? "rgb(255,255,153)"  //żółty
             : "rgb(200, 200, 200)"; //szary
 
+        const wordEditing = this.props.wordEditing
+            ? "rgb(255,255,153)"
+            : "rgb(10, 10, 10)";
         //skomplikowane wyliczenia zeby komorki ladnie sie wyswietlaly
         const x =
             this.props.x === 1
@@ -56,17 +90,17 @@ export default class Cell extends Component {
                 width="9"
                 height="9"
                 className={this.state.editing ? "input_current" : "input"}
-            >
-                <div class="input_crossword">
+            >  
+                <div >
                     <input 
-                        ref={this.props.value}
+                        type="text"
                         onFocus={this.handleFocus}
                         onBlur={this.handleBlur}
                         onChange={this.handleChange}
                         value={this.state.inputVal}
                         className={this.state.editing ? "input_current" : "input"}
                         maxLength="1"
-                        
+                        ref={this.cellRef}
                     />
                 </div>
             </foreignObject>
@@ -81,8 +115,8 @@ export default class Cell extends Component {
                         width={10}
                         height={10}
                         style={{
-                            fill: style,
-                            strokeWidth: "0.5px",
+                            fill: this.props.wordEditing ? wordEditing : style,
+                            strokeWidth: "0.4px",
                             stroke: "black"
                         }}
                     />
@@ -97,7 +131,7 @@ export default class Cell extends Component {
                         textAnchor="middle"
                         
                     >
-                        {this.props.value} 
+                        {this.state.value} 
                     </text>
                 </g>
                 {this.props.value === "" ? null : input}

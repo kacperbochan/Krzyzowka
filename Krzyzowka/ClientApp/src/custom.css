@@ -17,13 +17,30 @@ code {
 
 
 /*                KRZYŻÓWKA              */
+
+.grid_container {
+  height: 70vh;
+  margin: 0 auto;
+  text-align: center;
+}
 .crossword__grid {
   background-color: lightgrey;
   /*use a variable*/
 }
+*:focus {
+  outline: none;
+}
 
 .word {
   border: 1px solid red;
+}
+
+.input {
+  background-color: transparent;
+  font-size: 8px;
+  border: 0;
+  padding: 2px;
+  text-transform: uppercase;
 }
 
 .small {
@@ -44,6 +61,14 @@ code {
   border: 1px solid red;
 }
 
+.clue {
+  padding: 5px;
+}
 
+.clue:hover {
+  background-color: blue;
+  color: white;
+  cursor: pointer;
+}
 
 /*           KONIEC    KRZYŻÓWKA           */

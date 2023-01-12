@@ -22,21 +22,21 @@ export default class Grid extends Component {
         ) {
             const words = this.props.data.wordList.map((word, index) => (
                 <Word
+                    refer={this.props.data.refs[index]}
                     number={index}
                     word={word.word}
                     x={word.x}
                     y={word.y}
                     orientation={word.orientation}
                     key={Math.random()}
-                    onClick={this.handleWordClick}
                     wordChange={this.handleWordChange}
+                    addToRefs={this.props.addToRefs}
+                    moveToNextCell={this.props.moveToNextCell}
+                    changeActiveCell={this.props.changeActiveCell}
                 />
             ));
 
-            this.setState(
-                { wordsLoaded: false, words: words },
-                console.log(words)
-            );
+            this.setState({ wordsLoaded: false, words: words });
         }
     }
 
@@ -64,31 +64,30 @@ export default class Grid extends Component {
 
     
             
-    handleWordChange = (word) => {
-        this.setState(
-            { solvedWords: this.state.solvedWords.concat(word) },
-            () => {
-                console.log(word);
-                this.props.addSolvedWord(this.state.solvedWords);
-            }
-        );
+    handleWordChange = (tuple) => {
+        //the incoming tuple is an array, needs sorting by tuple.index
+        let sorted = tuple.value.slice(0);
+        let word = "";
+
+        sorted.sort((a, b) => {
+            return a.index - b.index;
+        });
+
+        sorted.forEach((e) => (word += e.value));
+
+        let { solvedWords } = this.state;
+
+        console.log("GhandleWordChange", solvedWords, tuple.value);
+
     };
 
     render() {
         // to wielkosc calej planszy w sensie jak duza jest wyswietlana
-        const dim =" 0 0 " + (10 * this.props.data.width + 3) + " " + (10 * this.props.data.height + 3); 
+        const dim =" 0 0 " + (13 * this.props.data.width + 3) + " " + (13 * this.props.data.height + 3); 
         // to tworzymy komórki na uzupelnianie hasla
         return (
-            <div>
-                <svg
-                    viewBox={dim}
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={this.classNames({
-                        crossword__grid: true
-                        // "crossword__grid--focussed": !! props.focussedCell
-                        // How did props get here?
-                    })}
-                >
+            <div className="grid_container">
+                <svg viewBox={dim} xmlns="http://www.w3.org/2000/svg">
                     {this.state.grid}
                     {this.state.words}
                 </svg>
